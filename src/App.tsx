@@ -8,11 +8,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { type ColumnDef } from "@tanstack/react-table";
-import DataTable from "@/components/DataTable";
+import DataTable, { type FeaturesType } from "@/components/DataTable";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Player } from "@/types";
 import "./App.css";
-import { Suspense, use, useTransition , type SubmitEvent} from "react";
+import { Suspense, use, useTransition, type SubmitEvent } from "react";
 import { getDailyLeaderboard } from "@/services/chessApi";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ChartAreaLinear } from "@/components/ChartAreaLinear";
@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useQuery } from "@tanstack/react-query";
 // eslint-disable-next-line react-refresh/only-export-components
-export const columns: ColumnDef<any, Player>[] = [
+export const columns: ColumnDef<FeaturesType, Player>[] = [
   {
     accessorKey: "status",
     header: "Status",
@@ -72,16 +72,14 @@ function TableSkeleton() {
 }
 
 function App() {
-  const { isPending, data, error, isError , refetch} = useQuery({
+  const { isPending, data, error, isError, refetch } = useQuery({
     queryKey: ["posts"],
     queryFn: async () => {
-      const response = await fetch("https://jsonplaceholder.typicode.com/posts")
-        .then((response) => response.json())
-        .then((json) => console.log(json));
-      return response;
+      const response = await fetch("https://jsonplaceholder.typicode.com/posts");
+      return response.json();
     },
   });
-  const [isLoading , startTransition] = useTransition();
+  const [isLoading, startTransition] = useTransition();
 
   const displayToast = () => {
     toast("Successfully signed up!");
@@ -132,8 +130,8 @@ function App() {
       />
 
       <form onSubmit={sendPost} className="my-8">
-        <Input placeholder="Search..." className="mb-3" name="title" />
-        <Textarea className="min-h-32 mb-3" name="body" />
+        <Input placeholder="Title post" className="mb-3" name="title" />
+        <Textarea className="min-h-32 mb-3" name="body" placeholder="Post content" />
         <Button disabled={isLoading} type="submit">
           {isLoading ? "Sending..." : "Send Post"}
         </Button>

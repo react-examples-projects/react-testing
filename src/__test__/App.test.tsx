@@ -1,12 +1,33 @@
 import "@testing-library/jest-dom";
-import { render, screen, waitFor } from "@testing-library/react";
-import { test } from "vitest";
-import DataTable from "@/components/DataTable";
+import { act, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, test, vi } from "vitest";
+import DataTable, { type FeaturesType } from "@/components/DataTable";
 import App from "@/App.tsx";
 import type { Player } from "@/types";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
+import renderWithProviders from "./utils/renderWithProviders";
+
+// Evita que el fetch real se dispare al importar App
+// (leaderboardPromise a nivel de módulo usa este servicio)
+vi.mock("@/services/chessApi", () => ({
+  getDailyLeaderboard: vi.fn().mockResolvedValue([]),
+}));
+
+beforeEach(() => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [],
+    }),
+  );
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 const mockPlayers: Player[] = [
   {
@@ -89,7 +110,7 @@ const mockPlayers: Player[] = [
   },
 ];
 
-export const columns: ColumnDef<Player>[] = [
+export const columns: ColumnDef<FeaturesType, Player>[] = [
   {
     accessorKey: "status",
     header: "Status",
@@ -109,10 +130,20 @@ export const columns: ColumnDef<Player>[] = [
 ];
 
 test("Render App", async () => {
-  render(<App />);
-  //await comp.findByText("Get started");
-  await screen.findByText("Card Title");
-  await screen.findByText("Card Description");
+  // act asíncrono: App contiene Suspense y suspende durante el render inicial
+  await act(async () => {
+    renderWithProviders(<App />);
+  });
+
+  // La tabla resolvió con datos vacíos (getDailyLeaderboard mockeado)
+  await screen.findByText("No results.");
+
+  // "Card Title"/"Card Description" aparecen en el Card principal y en CornerCard
+  const titles = await screen.findAllByText("Card Title");
+  expect(titles).toHaveLength(2);
+
+  const descriptions = await screen.findAllByText("Card Description");
+  expect(descriptions).toHaveLength(2);
 });
 
 test("render data table and find chess players", () => {
@@ -126,7 +157,7 @@ test("render data table and find chess players", () => {
 });
 
 test("dislay the toast when the user clicks", async () => {
-  render(
+  renderWithProviders(
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <App />
       <Toaster />

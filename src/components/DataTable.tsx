@@ -25,11 +25,11 @@ const features = tableFeatures({
   sortFns,
 });
 
-type FeaturesType = typeof features;
+export type FeaturesType = typeof features;
 
-// 1. Se remueve TValue y se usa ColumnDef<FeaturesType, TData, any>[]
+// 1. Se remueve TValue y se usa ColumnDef<FeaturesType, TData>[]
 interface DataTableProps<TData extends RowData> {
-  columns: ColumnDef<FeaturesType, TData, any>[];
+  columns: ColumnDef<FeaturesType, TData>[];
   data: TData[];
 }
 
