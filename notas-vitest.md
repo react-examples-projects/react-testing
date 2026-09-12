@@ -576,12 +576,42 @@ const rows = screen.getAllByRole("row");
 expect(screen.getAllByRole("listitem")).toHaveLength(3);
 ```
 
-| Lo que quieres             | Testing Library                                   | DOM nativo                  |
-| -------------------------- | ------------------------------------------------- | --------------------------- |
-| Un elemento dentro de otro | `within(el).getByRole(...)`                       | `el.querySelector(...)`     |
-| Todos los que coinciden    | `getAllBy*` / `queryAllBy*` / `findAllBy*`        | `el.querySelectorAll(...)`  |
+| Lo que quieres             | Testing Library                            | DOM nativo                 |
+| -------------------------- | ------------------------------------------ | -------------------------- |
+| Un elemento dentro de otro | `within(el).getByRole(...)`                | `el.querySelector(...)`    |
+| Todos los que coinciden    | `getAllBy*` / `queryAllBy*` / `findAllBy*` | `el.querySelectorAll(...)` |
 
 El `container.querySelector` real sigue disponible vía `render`, pero evítalo: pierdes roles y mensajes de error útiles.
+
+### `getByRole` vs `getByText` + `selector`: cuál es más estricto
+
+Hay quien prefiere no usar `getByRole` porque "no es lo bastante estricto": localiza por el **rol accesible**, y ese rol puede venir de un `role="button"` pegado a un `<div>` que no se comporta como botón real. El test pasaría y daría a entender que el elemento es accesible cuando no lo es del todo.
+
+```tsx
+// getByRole lo encuentra aunque sea un div con role="button"
+<div role="button" onClick={...}>Submit</div>
+```
+
+La alternativa es combinar **texto + tag** con `getByText` y la opción `selector`:
+
+```tsx
+screen.getByText("Submit", { selector: "button" }); // exige un <button> real
+screen.getByText("Home", { selector: "nav a" }); // un <a> dentro de <nav>
+```
+
+La opción `selector` es un filtro CSS: solo coincide si el elemento con ese texto también cumple el selector.
+
+| Enfoque                          | Qué exige                                 |
+| -------------------------------- | ----------------------------------------- |
+| `getByRole("button", { name })`  | Rol accesible = button + nombre accesible |
+| `getByText(texto, { selector })` | Texto + tag/elemento CSS concreto         |
+
+Cuándo usar cada uno:
+
+1. Flujo normal → `getByRole` (semántico, legible, recomendación oficial).
+2. Cuando importa el **tag real** (distinguir `<button>` de `<a>`, o exigir que un enlace esté en el `<nav>`) → `getByText` + `selector`.
+
+No son excluyentes: combina `getByRole` para la lógica principal y `selector` para anclar el test a un elemento concreto.
 
 ### ¿Es recomendable usar atributos de accesibilidad?
 
