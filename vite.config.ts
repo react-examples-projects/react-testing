@@ -7,7 +7,7 @@ import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
-import svgr from "vite-plugin-svgr"
+import svgr from "vite-plugin-svgr";
 // https://vite.dev/config/
 
 export default defineConfig({
@@ -16,6 +16,10 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: ["./vitest-setup.ts"],
+    include: [
+      "src/__test__/learning/**/*.{test,spec}.{ts,tsx}",
+      "src/__test__/react/**/*.{test,spec}.{ts,tsx}",
+    ],
   },
   resolve: {
     alias: {

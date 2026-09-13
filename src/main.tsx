@@ -12,7 +12,7 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={client}>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <Routes />
+        <Routes /> 
       </ThemeProvider>
     </QueryClientProvider>
 
